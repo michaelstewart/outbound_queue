@@ -19,19 +19,33 @@ def hello_world():
 def add():
     try:
         data = json.loads(request.data)
-        q.put(data)
+        if type(data) == list:
+            messages = data
+        else:
+            messages = [data]
+        for message in messages:
+            q.put(message)
     except ValueError:
         raise InvalidUsage('Invalid json', status_code=400)
     return ''
 
 @app.route('/get/', methods=['GET'])
 def get():
-    timeout = int(request.args.get('timeout', 1))
+    num = int(request.args.get('num', 1))
+    messages = []
     try:
-        msg = q.get(timeout=timeout)
-        return jsonify(msg)
+        for i in xrange(num):
+            message = q.get(block=False)
+            messages.append(message)
     except Queue.Empty:
-        return '', status.HTTP_404_NOT_FOUND
+        pass # We expect to hit this
+
+    print dir(status)
+    if len(messages) == 0:
+        status_code = status.HTTP_404_NOT_FOUND
+    else:
+        status_code = status.HTTP_200_OK
+    return jsonify({'messages': messages}), status_code
 
 @app.errorhandler(InvalidUsage)
 def handle_invalid_usage(error):
