@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from flask import Flask, request, jsonify
 from flask.ext.api import status, exceptions
 from api_exceptions import InvalidUsage
@@ -5,7 +7,9 @@ app = Flask(__name__)
 
 import json
 import Queue
-q = Queue.Queue()
+from persistent_queue import PersistentQueue
+
+q = PersistentQueue()
 
 @app.route('/')
 def hello_world():
