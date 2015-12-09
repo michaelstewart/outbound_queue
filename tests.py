@@ -2,6 +2,7 @@
 
 import unittest
 import time
+import os
 
 from persistent_queue import PersistentQueue
 from persistent_priority_queue import PersistentPriorityQueue
@@ -22,7 +23,6 @@ class TestPersistentPriorityQueue(unittest.TestCase):
         # Medium priority tasks
         obj1 = {'test':'medium_priority 1'}
         q.put(obj1, priority=10)
-        print q.next_priority()
         obj2 = {'test':'medium_priority 2'}
         q.put(obj2, priority=10)
         # High priority tasks
@@ -36,9 +36,12 @@ class TestPersistentPriorityQueue(unittest.TestCase):
             self.assertEqual(o, q.get())
 
 class TestDelayPersistentPriorityQueue(unittest.TestCase):
+    
 
     def test_queue(self):
+
         q = DelayPersistentPriorityQueue()
+
         # Medium priority tasks
         obj1 = {'test':'medium_priority 1'}
         q.put(obj1, priority=10)
@@ -74,6 +77,19 @@ class TestDelayPersistentPriorityQueue(unittest.TestCase):
         for o in order:
             self.assertEqual(o, q.get())
 
+    def test_persistence(self):
+        FILENAME = 'test_q.p'
+        q = DelayPersistentPriorityQueue(FILENAME)
+
+        obj = {'test':'persist'}
+        q.put(obj)
+        q.persist()
+
+        # Recreate the queue from disk
+        q = DelayPersistentPriorityQueue(FILENAME)
+        self.assertEqual(obj, q.get())
+
+        os.remove(FILENAME)
 
 if __name__ == '__main__':
     unittest.main()
