@@ -11,10 +11,6 @@ from persistent_queue import PersistentQueue
 
 q = PersistentQueue()
 
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
-
 @app.route('/add/', methods=['POST'])
 def add():
     try:
