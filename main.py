@@ -5,11 +5,13 @@ from flask.ext.api import status, exceptions
 from api_exceptions import InvalidUsage
 app = Flask(__name__)
 
+import atexit
 import json
 import Queue
 from persistent_queue import PersistentQueue
 
-q = PersistentQueue()
+QUEUE_FILENAME = 'queue.p'
+q = PersistentQueue(QUEUE_FILENAME)
 
 @app.route('/add/', methods=['POST'])
 def add():
@@ -36,7 +38,6 @@ def get():
     except Queue.Empty:
         pass # We expect to hit this
 
-    print dir(status)
     if len(messages) == 0:
         status_code = status.HTTP_404_NOT_FOUND
     else:
@@ -49,5 +50,12 @@ def handle_invalid_usage(error):
     response.status_code = error.status_code
     return response
 
+def persist_on_exit():
+    ''' this is run upon exit '''
+    print "Exiting, saving queue."
+    # TODO implement
+
 if __name__ == '__main__':
+    atexit.register(persist_on_exit)
     app.run(debug=True)
+
