@@ -1,24 +1,34 @@
 #!/usr/bin/python
 
 import collections
-from Queue import Queue
-import pickle 
+import pickle
 
 class PersistentQueue(object):
 
-    def __init__(self, filename):
+    def __init__(self, filename=None):
         self.filename = filename
-        # Queue.__init__(self)
         self.q = collections.deque()
+        if self.filename is not None:
+            try:
+                with open(filename, 'rb') as input_file:
+                    self.q = pickle.load(input_file)
+            except IOError:
+                # Not an error, just first run where we don't have a queue.
+                pass
 
     def persist(self):
-        output_file = open(self.filename, 'wb')
-        pickle.dump(self, output_file)
+        # If the filename is None we don't persist
+        if self.filename is not None:
+            with open(self.filename, 'wb') as output_file:
+                pickle.dump(self.q, output_file)
 
-    def put(self, data):
-        # self.persist()
-        self.q.append(data)
+    def put(self, message):
+        self.q.append(message)
 
     def get(self):
-        # return self.get.
+        try:
+            return self.q.popleft()
+        except IndexError:
+            return None
+
 

@@ -9,12 +9,16 @@ import atexit
 import json
 import Queue
 from persistent_queue import PersistentQueue
+from persistent_priority_queue import PersistentPriorityQueue
+from delay_persistent_priority_queue import DelayPersistentPriorityQueue
 
 QUEUE_FILENAME = 'queue.p'
-q = PersistentQueue(QUEUE_FILENAME)
+q = DelayPersistentPriorityQueue(QUEUE_FILENAME)
 
 @app.route('/add/', methods=['POST'])
 def add():
+    priority = int(request.args.get('priority', 0))
+    delay = int(request.args.get('delay', 0))
     try:
         data = json.loads(request.data)
         if type(data) == list:
@@ -22,7 +26,7 @@ def add():
         else:
             messages = [data]
         for message in messages:
-            q.put(message)
+            q.put(message, priority=priority, delay=delay)
     except ValueError:
         raise InvalidUsage('Invalid json', status_code=400)
     return ''
@@ -31,12 +35,11 @@ def add():
 def get():
     num = int(request.args.get('num', 1))
     messages = []
-    try:
-        for i in xrange(num):
-            message = q.get(block=False)
-            messages.append(message)
-    except Queue.Empty:
-        pass # We expect to hit this
+    for i in xrange(num):
+        message = q.get()
+        if message is None:
+            break
+        messages.append(message)
 
     if len(messages) == 0:
         status_code = status.HTTP_404_NOT_FOUND
@@ -52,8 +55,8 @@ def handle_invalid_usage(error):
 
 def persist_on_exit():
     ''' this is run upon exit '''
-    print "Exiting, saving queue."
-    # TODO implement
+    print "Exiting and saving queue."
+    q.persist()
 
 if __name__ == '__main__':
     atexit.register(persist_on_exit)
