@@ -1,4 +1,12 @@
 
+## Running the Queue
+
+Start the development server by running: `python main.py`
+
+## Running the Tests
+
+Start the development server by running: `python tests.py`
+
 ## Setup
 
 I've used a virtual env under the directory env.
@@ -21,10 +29,4 @@ To deactivate the env run:
 
 `deactivate`
 
-## Running the Queue
 
-Start the developement server by running: `python main.py`
-
-## Running the Tests
-
-Start the developement server by running: `python tests.py`
