@@ -6,21 +6,27 @@ import pickle
 
 class PersistentPriorityQueue(object):
 
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, state=None):
         self.filename = filename
         count_start = 0 # Defaults count start
-        self.q = [] # Use a list for the heapq
+        self.q = [] # Use an empty list for the heapq by default
 
         if self.filename is not None:
             try:
                 with open(filename, 'rb') as input_file:
                     (count_start, self.q) = pickle.load(input_file)
+
             except IOError:
                 # Not an error, just first run where we don't have a queue.
                 pass
+            except EOFError:
+                # The file we're trying to read from is probably broken
+                print 'Persistence error'
+
+        if state is not None:
+            (count_start, self.q) = state
 
         self.counter = self.count_iterator(start=count_start)
-            
 
     def put(self, message, priority=0):
         message_count = next(self.counter)

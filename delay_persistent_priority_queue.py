@@ -8,9 +8,22 @@ class DelayPersistentPriorityQueue(object):
 
     def __init__(self, filename=None):
         self.filename = filename
-        self.available_queue = PersistentPriorityQueue()
+        available_queue_state = None
+        wait_queue_state = None
+        if self.filename is not None:
+            try:
+                with open(filename, 'rb') as input_file:
+                    (available_queue_state, wait_queue_state) = pickle.load(input_file)
+            except IOError:
+                # Not an error, just first run where we don't have a queue.
+                pass
+            except EOFError:
+                # The file we're trying to read from is probably broken
+                print 'Persistence error'
+
+        self.available_queue = PersistentPriorityQueue(state=available_queue_state)
         # queue for tasks that have a delay
-        self.wait_queue = PersistentPriorityQueue()
+        self.wait_queue = PersistentPriorityQueue(state=wait_queue_state)
 
     def put(self, message, priority=0, delay=0):
         if delay == 0:
@@ -46,9 +59,16 @@ class DelayPersistentPriorityQueue(object):
             (priority, message) = self.wait_queue.get()
             self.put_in_avail(message, priority)
 
+    def get_state(self):
+        '''
+        State of this queue is simply the state of the two queues
+        that it's comprised of
+        '''
+        return (self.available_queue.get_state(), self.wait_queue.get_state())
+
     def persist(self):
         if self.filename is not None:
             with open(self.filename, 'wb') as output_file:
-                pickle.dump((self.available_queue, self.wait_queue), output_file)
-    
+                pickle.dump(self.get_state(), output_file)
+
 
