@@ -2,4 +2,7 @@
 # virtual env
 env
 
+# pickled python files
+*.p
+
 *.pyc

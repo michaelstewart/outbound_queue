@@ -44,9 +44,11 @@ class PersistentPriorityQueue(object):
         # If the filename is None we don't persist
         if self.filename is not None:
             with open(self.filename, 'wb') as output_file:
-                count_for_storage = next(self.counter)
-                pickle.dump((count_for_storage, self.q), output_file)
+                pickle.dump(self.get_state(), output_file)
 
+    def get_state(self):
+        count_state = next(self.counter)
+        return (count_state, self.q)
 
     def count_iterator(self, start=0):
         i = start

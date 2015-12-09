@@ -13,7 +13,7 @@ from persistent_priority_queue import PersistentPriorityQueue
 from delay_persistent_priority_queue import DelayPersistentPriorityQueue
 
 QUEUE_FILENAME = 'queue.p'
-q = DelayPersistentPriorityQueue(QUEUE_FILENAME)
+q = PersistentPriorityQueue(QUEUE_FILENAME)
 
 @app.route('/add/', methods=['POST'])
 def add():
@@ -26,7 +26,7 @@ def add():
         else:
             messages = [data]
         for message in messages:
-            q.put(message, priority=priority, delay=delay)
+            q.put(message, priority=priority)
     except ValueError:
         raise InvalidUsage('Invalid json', status_code=400)
     return ''
